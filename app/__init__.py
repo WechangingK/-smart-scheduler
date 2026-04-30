@@ -11,10 +11,6 @@ def create_app(config_path=None):
 
 	init_db(app)
 
-	# 初始化 CalDAV 存储目录
-	from app.services.caldav_sync import init_caldav
-	init_caldav()
-
 	from app.routes.dashboard import bp as dash_bp
 	from app.routes.tasks import bp as task_bp
 	from app.routes.habits import bp as habit_bp

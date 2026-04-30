@@ -55,12 +55,9 @@ def optimize_schedule():
 				db.add(block)
 			db.commit()
 
-			# 获取所有日程块并同步到手机日历
 			all_blocks = db.query(TimeBlock).filter(
 				TimeBlock.date == target_date
 			).order_by(TimeBlock.start_time).all()
-
-			_sync_to_phone(target_date, all_blocks)
 
 			return jsonify({
 				'success': True,
@@ -100,32 +97,6 @@ def update_block(block_id):
 
 		db.commit()
 		db.refresh(block)
-
-		# 同步到手机
-		all_blocks = db.query(TimeBlock).filter(
-			TimeBlock.date == block.date
-		).order_by(TimeBlock.start_time).all()
-		_sync_to_phone(block.date, all_blocks)
-
 		return jsonify(block.to_dict())
 	finally:
 		db.close()
-
-
-def _sync_to_phone(target_date, blocks):
-	"""同步日程到 CalDAV 服务器，手机自动拉取"""
-	try:
-		from app.services.caldav_sync import sync_blocks_to_caldav
-		sync_blocks_to_caldav([
-			{
-				'id': b.id,
-				'date': b.date,
-				'title': b.title,
-				'start_time': b.start_time.strftime('%H:%M') if b.start_time else '09:00',
-				'end_time': b.end_time.strftime('%H:%M') if b.end_time else '10:00',
-				'block_type': b.block_type,
-			}
-			for b in blocks
-		])
-	except Exception as e:
-		print(f'[CalDAV Sync] 同步失败: {e}')

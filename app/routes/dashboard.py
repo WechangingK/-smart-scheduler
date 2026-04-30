@@ -73,11 +73,6 @@ def settings_page():
 	return render_template('settings.html')
 
 
-@bp.route('/phone')
-def phone_calendar_page():
-	return render_template('calendar_download.html', lan_ip='')
-
-
 def _calc_streak(db):
 	"""计算当前连续打卡天数"""
 	habits = db.query(HabitRecord.date).distinct().order_by(HabitRecord.date.desc()).limit(30).all()
