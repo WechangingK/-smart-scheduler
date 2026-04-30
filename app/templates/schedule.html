@@ -1,0 +1,101 @@
+{% extends "base.html" %}
+{% block title %}智能日程 - 智能日程管理{% endblock %}
+
+{% block content %}
+<div class="page-header">
+	<h2>⏰ 智能日程</h2>
+	<p class="text-muted">AI 驱动的每日时间规划</p>
+</div>
+
+<div class="toolbar">
+	<div class="toolbar-left">
+		<input type="date" id="scheduleDate" class="form-input" style="width:auto" value="{{ today }}" onchange="loadSchedule()">
+	</div>
+	<div>
+		<button class="btn btn-primary" onclick="optimizeSchedule()">🤖 AI 智能排程</button>
+	</div>
+</div>
+
+<div id="scheduleAnalysis" style="margin-bottom: 16px;"></div>
+
+<div class="dash-panel" style="grid-column: 1 / -1;">
+	<div class="panel-header"><h3>今日时间线</h3></div>
+	<div class="panel-body">
+		<div id="timelineView"><p class="empty-hint">加载中...</p></div>
+	</div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/tasks.js') }}"></script>
+<script>
+async function loadSchedule() {
+	const date = document.getElementById('scheduleDate').value;
+	try {
+		const blocks = await api(`/api/schedule/daily?date=${date}`);
+		renderTimeline(blocks);
+	} catch (e) {
+		showToast('加载日程失败: ' + e.message, 'error');
+	}
+}
+
+async function optimizeSchedule() {
+	const date = document.getElementById('scheduleDate').value;
+	const btn = event.target;
+	btn.disabled = true;
+	btn.textContent = 'AI 思考中...';
+	try {
+		const result = await api('/api/schedule/optimize', {
+			method: 'POST',
+			body: JSON.stringify({ date }),
+		});
+		if (result.success) {
+			showToast('AI 日程已生成！', 'success');
+			renderTimeline(result.blocks);
+			if (result.analysis) {
+				document.getElementById('scheduleAnalysis').innerHTML =
+					`<div class="stat-card"><strong>📝 AI 分析：</strong>${result.analysis}</div>`;
+			}
+		} else {
+			showToast(result.message || '生成失败', 'error');
+			if (result.fallback && result.fallback.length > 0) {
+				renderTimeline(result.fallback);
+			}
+		}
+	} catch (e) {
+		showToast('AI 排程失败: ' + e.message, 'error');
+	}
+	btn.disabled = false;
+	btn.textContent = '🤖 AI 智能排程';
+}
+
+function renderTimeline(blocks) {
+	const container = document.getElementById('timelineView');
+	if (!blocks || blocks.length === 0) {
+		container.innerHTML = '<p class="empty-hint">暂无日程安排</p>';
+		return;
+	}
+	const typeLabels = { task: '任务', focus: '深度工作', break: '休息', habit: '习惯', fixed: '固定日程' };
+	const typeColors = { task: '#4a6cf7', focus: '#e53e3e', break: '#48bb78', habit: '#ed8936', fixed: '#9f7aea' };
+
+	let html = '<div class="timeline">';
+	blocks.forEach(b => {
+		const color = typeColors[b.block_type] || '#4a6cf7';
+		const typeLabel = typeLabels[b.block_type] || b.block_type;
+		html += `
+			<div class="timeline-item type-${b.block_type}">
+				<span class="time-range">${b.start_time} - ${b.end_time}</span>
+				<span class="block-title">${b.title}</span>
+				<span style="font-size:12px;color:${color};background:${color}15;padding:2px 6px;border-radius:4px;">${typeLabel}</span>
+				${b.is_ai_suggested ? '<span class="ai-badge">AI</span>' : ''}
+				${b.is_accepted ? '<span style="color:#48bb78">✓</span>' : ''}
+			</div>`;
+	});
+	html += '</div>';
+	container.innerHTML = html;
+}
+
+// 页面加载时获取今日日程
+loadSchedule();
+</script>
+{% endblock %}

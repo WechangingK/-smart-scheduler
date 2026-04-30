@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+	<title>导入日程 - 智能日程管理</title>
+	<style>
+		* { margin: 0; padding: 0; box-sizing: border-box; }
+		body {
+			font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+			background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+			min-height: 100vh;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			padding: 20px;
+		}
+		.card {
+			background: #fff;
+			border-radius: 24px;
+			padding: 48px 28px;
+			text-align: center;
+			max-width: 380px;
+			width: 100%;
+			box-shadow: 0 24px 80px rgba(0,0,0,0.25);
+		}
+		.icon {
+			width: 80px;
+			height: 80px;
+			background: linear-gradient(135deg, #667eea, #764ba2);
+			border-radius: 50%;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			margin: 0 auto 20px;
+			font-size: 40px;
+			box-shadow: 0 8px 24px rgba(102, 126, 234, 0.4);
+		}
+		h1 { font-size: 24px; color: #1a1a2e; margin-bottom: 8px; }
+		.subtitle { font-size: 15px; color: #8892a4; margin-bottom: 36px; line-height: 1.6; }
+		.btn {
+			display: block;
+			width: 100%;
+			padding: 18px;
+			border: none;
+			border-radius: 16px;
+			font-size: 20px;
+			font-weight: 700;
+			cursor: pointer;
+			text-decoration: none;
+			margin-bottom: 14px;
+			transition: all 0.2s;
+			-webkit-tap-highlight-color: transparent;
+		}
+		.btn-primary {
+			background: linear-gradient(135deg, #667eea, #764ba2);
+			color: #fff;
+			box-shadow: 0 8px 24px rgba(102, 126, 234, 0.3);
+		}
+		.btn-primary:active {
+			transform: scale(0.96);
+			box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+		}
+		.btn-secondary {
+			background: #f0f2f8;
+			color: #4a5568;
+			font-size: 16px;
+		}
+		.steps {
+			text-align: left;
+			margin-top: 28px;
+			padding: 20px;
+			background: #f8f9fc;
+			border-radius: 16px;
+			font-size: 14px;
+			color: #4a5568;
+			line-height: 2.2;
+		}
+		.steps strong { color: #667eea; }
+		.update-time { font-size: 12px; color: #a0aec0; margin-top: 16px; }
+	</style>
+</head>
+<body>
+	<div class="card">
+		<div class="icon">📅</div>
+		<h1>同步日程到手机</h1>
+		<p class="subtitle">一键下载日程文件<br>自动导入小米/华为/OPPO 等所有安卓日历</p>
+
+		<a href="/api/calendar/schedule.ics" class="btn btn-primary">
+			📥 一键导入手机日历
+		</a>
+
+		<div class="steps">
+			<strong>📱 使用说明：</strong><br>
+			1. 点击上方「一键导入」按钮<br>
+			2. 下载完成后点击打开 .ics 文件<br>
+			3. 系统自动弹出日历导入界面<br>
+			4. 选择日历账户 → 确定<br>
+			<br>
+			<strong>💡 提示：</strong>每次 AI 排程后，打开此页面点一下即可更新手机日历。建议将此页添加到手机浏览器书签。
+		</div>
+
+		<div class="update-time" id="updateTime"></div>
+	</div>
+
+	<script>
+		document.getElementById('updateTime').textContent =
+			'更新于: ' + new Date().toLocaleString('zh-CN');
+	</script>
+</body>
+</html>

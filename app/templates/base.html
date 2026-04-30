@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>{% block title %}智能日程管理{% endblock %}</title>
+	<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+	<div class="app-layout">
+		<aside class="sidebar">
+			<div class="sidebar-header">
+				<h1>📅 智能日程</h1>
+			</div>
+			<nav class="sidebar-nav">
+				<a href="{{ url_for('dashboard.index') }}" class="nav-item {% if request.path == '/' %}active{% endif %}">
+					<span class="nav-icon">📊</span> 仪表盘
+				</a>
+				<a href="/tasks" class="nav-item {% if request.path.startswith('/tasks') %}active{% endif %}">
+					<span class="nav-icon">✅</span> 任务管理
+				</a>
+				<a href="/schedule" class="nav-item {% if request.path.startswith('/schedule') %}active{% endif %}">
+					<span class="nav-icon">⏰</span> 智能日程
+				</a>
+				<a href="/habits" class="nav-item {% if request.path.startswith('/habits') %}active{% endif %}">
+					<span class="nav-icon">🔄</span> 习惯追踪
+				</a>
+				<a href="/settings" class="nav-item {% if request.path.startswith('/settings') %}active{% endif %}">
+					<span class="nav-icon">⚙️</span> 设置
+				</a>
+			</nav>
+		</aside>
+		<main class="main-content">
+			{% block content %}{% endblock %}
+		</main>
+	</div>
+
+	<script src="{{ url_for('static', filename='js/main.js') }}"></script>
+	{% block scripts %}{% endblock %}
+</body>
+</html>

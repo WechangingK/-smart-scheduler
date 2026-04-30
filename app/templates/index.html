@@ -1,0 +1,100 @@
+{% extends "base.html" %}
+{% block title %}仪表盘 - 智能日程管理{% endblock %}
+
+{% block content %}
+<div class="page-header">
+	<h2>📊 今日概览</h2>
+	<p class="text-muted">{{ today.strftime('%Y年%m月%d日') }}</p>
+</div>
+
+<div class="stats-grid">
+	<div class="stat-card">
+		<div class="stat-value">{{ stats.pending_count }}</div>
+		<div class="stat-label">待办任务</div>
+	</div>
+	<div class="stat-card">
+		<div class="stat-value">{{ stats.today_completed }}</div>
+		<div class="stat-label">今日已完成</div>
+	</div>
+	<div class="stat-card">
+		<div class="stat-value">{{ stats.habit_streak }} 天</div>
+		<div class="stat-label">连续打卡</div>
+	</div>
+	<div class="stat-card">
+		<div class="stat-value">{{ blocks|length }}</div>
+		<div class="stat-label">今日日程块</div>
+	</div>
+</div>
+
+<div class="dashboard-grid">
+	<div class="dash-panel">
+		<div class="panel-header">
+			<h3>📋 待办任务</h3>
+			<a href="/tasks" class="btn btn-sm">查看全部</a>
+		</div>
+		<div class="panel-body">
+			{% if tasks %}
+			<ul class="task-list">
+				{% for task in tasks %}
+				<li class="task-item priority-{{ task.priority }}">
+					<div class="task-info">
+						<span class="task-title">{{ task.title }}</span>
+						{% if task.due_date %}
+						<span class="task-due">{{ task.due_date.strftime('%m/%d %H:%M') }}</span>
+						{% endif %}
+					</div>
+					<span class="badge badge-{{ task.priority }}">{{ task.priority }}</span>
+				</li>
+				{% endfor %}
+			</ul>
+			{% else %}
+			<p class="empty-hint">暂无待办任务 🎉</p>
+			{% endif %}
+		</div>
+	</div>
+
+	<div class="dash-panel">
+		<div class="panel-header">
+			<h3>⏱️ 今日日程</h3>
+			<a href="/schedule" class="btn btn-sm">详细规划</a>
+		</div>
+		<div class="panel-body">
+			{% if blocks %}
+			<div class="timeline">
+				{% for block in blocks %}
+				<div class="timeline-item type-{{ block.block_type }}">
+					<span class="time-range">{{ block.start_time.strftime('%H:%M') }} - {{ block.end_time.strftime('%H:%M') }}</span>
+					<span class="block-title">{{ block.title }}</span>
+					{% if block.is_ai_suggested %}<span class="ai-badge">AI</span>{% endif %}
+				</div>
+				{% endfor %}
+			</div>
+			{% else %}
+			<p class="empty-hint">今日尚无日程安排</p>
+			<a href="/schedule" class="btn btn-primary">生成智能日程</a>
+			{% endif %}
+		</div>
+	</div>
+
+	<div class="dash-panel">
+		<div class="panel-header">
+			<h3>🔄 今日习惯</h3>
+			<a href="/habits" class="btn btn-sm">打卡</a>
+		</div>
+		<div class="panel-body">
+			{% if habits %}
+			<ul class="habit-checklist">
+				{% for h in habits %}
+				<li class="habit-item {% if h.completed %}completed{% endif %}">
+					<span class="habit-name">{{ h.name }}</span>
+					<span class="habit-status">{% if h.completed %}✅{% else %}⬜{% endif %}</span>
+				</li>
+				{% endfor %}
+			</ul>
+			{% else %}
+			<p class="empty-hint">今日尚未打卡</p>
+			{% endif %}
+		</div>
+	</div>
+</div>
+{% endblock %}

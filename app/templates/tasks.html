@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% block title %}任务管理 - 智能日程管理{% endblock %}
+
+{% block content %}
+<div class="page-header">
+	<h2>✅ 任务管理</h2>
+	<p class="text-muted">管理所有待办任务</p>
+</div>
+
+<div class="toolbar">
+	<div class="toolbar-left">
+		<select id="filterStatus" class="form-select" style="width:auto" onchange="loadTasks()">
+			<option value="">全部状态</option>
+			<option value="pending">待完成</option>
+			<option value="completed">已完成</option>
+			<option value="cancelled">已取消</option>
+		</select>
+		<select id="filterCategory" class="form-select" style="width:auto" onchange="loadTasks()">
+			<option value="">全部分类</option>
+			<option value="工作">工作</option>
+			<option value="学习">学习</option>
+			<option value="健康">健康</option>
+			<option value="生活">生活</option>
+		</select>
+	</div>
+	<button class="btn btn-primary" onclick="openTaskModal()">+ 新建任务</button>
+</div>
+
+<table class="data-table" id="taskTable">
+	<thead>
+		<tr>
+			<th>标题</th>
+			<th>优先级</th>
+			<th>分类</th>
+			<th>截止时间</th>
+			<th>预估</th>
+			<th>状态</th>
+			<th>操作</th>
+		</tr>
+	</thead>
+	<tbody>
+		<tr><td colspan="7" class="empty-hint">加载中...</td></tr>
+	</tbody>
+</table>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/tasks.js') }}"></script>
+{% endblock %}

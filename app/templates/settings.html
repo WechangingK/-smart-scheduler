@@ -1,0 +1,165 @@
+{% extends "base.html" %}
+{% block title %}设置 - 智能日程管理{% endblock %}
+
+{% block content %}
+<div class="page-header">
+	<h2>⚙️ 系统设置</h2>
+	<p class="text-muted">配置 API、邮箱和手机同步</p>
+</div>
+
+<div class="dashboard-grid">
+	<div class="dash-panel">
+		<div class="panel-header"><h3>🤖 DeepSeek AI</h3></div>
+		<div class="panel-body">
+			<div class="form-group">
+				<label class="form-label">API Key</label>
+				<input type="password" id="deepseek_api_key" class="form-input" placeholder="sk-xxxxx">
+			</div>
+			<div class="form-group">
+				<label class="form-label">模型</label>
+				<select id="deepseek_model" class="form-select">
+					<option value="deepseek-chat">deepseek-chat</option>
+					<option value="deepseek-reasoner">deepseek-reasoner</option>
+				</select>
+			</div>
+			<button class="btn btn-primary" onclick="saveSection('deepseek')">保存 AI 设置</button>
+		</div>
+	</div>
+
+	<div class="dash-panel">
+		<div class="panel-header"><h3>📧 邮件通知</h3></div>
+		<div class="panel-body">
+			<div class="form-group">
+				<label class="form-label">SMTP 服务器</label>
+				<input type="text" id="smtp_server" class="form-input" placeholder="smtp.qq.com">
+			</div>
+			<div class="form-group">
+				<label class="form-label">端口（QQ邮箱: 587 或 465）</label>
+				<input type="number" id="smtp_port" class="form-input" value="587">
+			</div>
+			<div class="form-group">
+				<label class="form-label">邮箱账号</label>
+				<input type="email" id="smtp_user" class="form-input" placeholder="xxxx@qq.com">
+			</div>
+			<div class="form-group">
+				<label class="form-label">QQ邮箱授权码</label>
+				<input type="password" id="smtp_password" class="form-input" placeholder="16位授权码">
+			</div>
+			<div class="form-group">
+				<label class="form-label">发件人邮箱</label>
+				<input type="email" id="sender_email" class="form-input">
+			</div>
+			<div class="form-group">
+				<label class="form-label">提醒接收邮箱</label>
+				<input type="email" id="reminder_email" class="form-input">
+			</div>
+			<div class="form-group">
+				<label class="form-label">提前提醒（分钟）</label>
+				<input type="number" id="reminder_offset_minutes" class="form-input" value="30">
+			</div>
+			<div style="display:flex; gap:10px;">
+				<button class="btn btn-primary" onclick="saveSection('email')">保存邮箱设置</button>
+				<button class="btn" onclick="testEmail()">发送测试邮件</button>
+			</div>
+		</div>
+	</div>
+
+	<div class="dash-panel">
+		<div class="panel-header"><h3>📅 同步到手机日历</h3></div>
+		<div class="panel-body">
+			<div style="text-align:center;padding:20px 0;">
+				<div style="font-size:48px;margin-bottom:12px;">📱</div>
+				<div style="font-size:16px;font-weight:600;margin-bottom:8px;">手机浏览器打开下方地址</div>
+				<div style="font-size:13px;color:#4a5568;margin-bottom:16px;">
+					AI 排程后，一键下载导入手机日历
+				</div>
+				<div style="display:flex;gap:10px;max-width:400px;margin:0 auto;">
+					<input type="text" id="phone_url" class="form-input" readonly
+						style="font-family:monospace;font-size:14px;text-align:center;">
+					<button class="btn btn-primary" onclick="copyValue('phone_url')">复制</button>
+				</div>
+			</div>
+			<div style="background:#f0fff4;padding:16px;border-radius:12px;font-size:13px;line-height:1.8;margin-top:16px;">
+				<strong>📱 使用流程：</strong><br>
+				1. 手机浏览器打开上方地址（建议加书签）<br>
+				2. 点击「一键导入手机日历」按钮<br>
+				3. 下载完成后点击 .ics 文件<br>
+				4. 系统自动弹出日历导入 → 确定<br>
+				<br>
+				<strong>💡 提示：</strong>AI 排程后，手机打开此页面点一下即可更新日历。兼容所有安卓手机。
+			</div>
+		</div>
+	</div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+let allSettings = {};
+
+async function loadSettings() {
+	try {
+		allSettings = await api('/api/settings');
+		Object.keys(allSettings).forEach(key => {
+			const el = document.getElementById(key);
+			if (el && allSettings[key] && !String(allSettings[key]).startsWith('***')) {
+				el.value = allSettings[key];
+			}
+		});
+		loadCalendarInfo();
+	} catch (e) {
+		showToast('加载设置失败', 'error');
+	}
+}
+
+async function loadCalendarInfo() {
+	try {
+		const status = await api('/api/calendar/status');
+		document.getElementById('phone_url').value = status.qr_page_url;
+	} catch (e) {
+		document.getElementById('phone_url').value = 'http://127.0.0.1:5000/api/calendar/download';
+	}
+}
+
+function copyValue(fieldId) {
+	const input = document.getElementById(fieldId);
+	input.select();
+	document.execCommand('copy');
+	showToast('已复制！在手机浏览器中粘贴打开', 'success');
+}
+
+async function saveSection(section) {
+	const keys = {
+		deepseek: ['deepseek_api_key', 'deepseek_model'],
+		email: ['smtp_server', 'smtp_port', 'smtp_user', 'smtp_password', 'sender_email', 'reminder_email', 'reminder_offset_minutes'],
+	};
+	const data = {};
+	keys[section].forEach(key => {
+		const el = document.getElementById(key);
+		if (el && el.value) data[key] = el.value;
+	});
+	try {
+		await api('/api/settings', { method: 'PUT', body: JSON.stringify(data) });
+		showToast('设置已保存', 'success');
+	} catch (e) {
+		showToast('保存失败: ' + e.message, 'error');
+	}
+}
+
+async function testEmail() {
+	const email = document.getElementById('reminder_email').value;
+	if (!email) { showToast('请先填写提醒接收邮箱', 'error'); return; }
+	try {
+		const result = await api('/api/settings/test-email', {
+			method: 'POST',
+			body: JSON.stringify({ recipient: email }),
+		});
+		showToast(result.message, result.success ? 'success' : 'error');
+	} catch (e) {
+		showToast('发送失败: ' + e.message, 'error');
+	}
+}
+
+loadSettings();
+</script>
+{% endblock %}
